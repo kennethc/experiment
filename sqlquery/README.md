@@ -1,4 +1,4 @@
-# Performance comparison between prepared statements and straight statements
+# Performance comparison between SQL prepared statements and straight statements
 
 Experiment to compare the performance of running straight SQL statements vs prepared statements.
 
