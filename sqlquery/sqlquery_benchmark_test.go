@@ -69,6 +69,55 @@ func BenchmarkMysqlPrepStmtOuterLoop(b *testing.B) {
 	}
 }
 
+func BenchmarkSqlserverQuery(b *testing.B) {
+	db := dbs["sqlserver"].conn
+	err := db.Ping()
+	if err != nil {
+		b.Errorf("No SqlServer connection.")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var id int
+		db.QueryRow("select id from test where id=1").Scan(&id)
+	}
+}
+
+func BenchmarkSqlserverPrepStmtInnerLoop(b *testing.B) {
+	db := dbs["sqlserver"].conn
+	err := db.Ping()
+	if err != nil {
+		b.Errorf("No SqlServer connection.")
+	}
+	b.ResetTimer()
+	stmt, err := db.Prepare("select id from test where id=?")
+	defer stmt.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i := 0; i < b.N; i++ {
+		var id int
+		db.QueryRow("1").Scan(&id)
+	}
+}
+
+func BenchmarkSqlserverPrepStmtOuterLoop(b *testing.B) {
+	db := dbs["sqlserver"].conn
+	err := db.Ping()
+	if err != nil {
+		b.Errorf("No SqlServer connection.")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var id int
+		stmt, err := db.Prepare("select id from test where id=?")
+		defer stmt.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+		db.QueryRow("1").Scan(&id)
+	}
+}
+
 func TestMain(m *testing.M) {
 	dbs = make(map[string]connection)
 	for _, v := range dbTypes {
