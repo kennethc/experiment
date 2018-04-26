@@ -3,24 +3,28 @@ package sqlquery
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+    _ "github.com/denisenkom/go-mssqldb"
 	"log"
 	"os"
+    "strings"
 	"testing"
 )
 
+type connection struct {
+    dsn    string
+    conn   *sql.DB
+}
+
 var (
-	user   string
-	passwd string
-	host   string
-	dbname string
-	dsn    string
-	db     *sql.DB
+    dbTypes []string = []string{"mysql", "sqlserver"}
+    dbs map[string]connection
 )
 
-func BenchmarkSQLQuery(b *testing.B) {
-	db, err := sql.Open("mysql", dsn)
+func BenchmarkMysqlQuery(b *testing.B) {
+    db := dbs["mysql"].conn
+	err := db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		b.Errorf("No MySQL connection.")
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -29,10 +33,11 @@ func BenchmarkSQLQuery(b *testing.B) {
 	}
 }
 
-func BenchmarkSQLPrepStmtInnerLoop(b *testing.B) {
-	db, err := sql.Open("mysql", dsn)
+func BenchmarkMysqlPrepStmtInnerLoop(b *testing.B) {
+    db := dbs["mysql"].conn
+	err := db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		b.Errorf("No MySQL connection.")
 	}
 	b.ResetTimer()
 	stmt, err := db.Prepare("select id from test where id=?")
@@ -46,10 +51,11 @@ func BenchmarkSQLPrepStmtInnerLoop(b *testing.B) {
 	}
 }
 
-func BenchmarkSQLPrepStmtOuterLoop(b *testing.B) {
-	db, err := sql.Open("mysql", dsn)
+func BenchmarkMysqlPrepStmtOuterLoop(b *testing.B) {
+    db := dbs["mysql"].conn
+	err := db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		b.Errorf("No MySQL connection.")
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -64,44 +70,48 @@ func BenchmarkSQLPrepStmtOuterLoop(b *testing.B) {
 }
 
 func TestMain(m *testing.M) {
-	readDBCreds()
-	setupDB()
+    dbs = make(map[string]connection)
+    for _, v := range dbTypes {
+        db := connection{}
+        db.dsn = readDBCreds(v)
+        db.conn = setupDB(v, db.dsn)
+        dbs[v] = db
+    }
 	result := m.Run()
-	teardownDB()
+    for _, v := range dbTypes {
+        teardownDB(dbs[v].conn)
+    }
 	os.Exit(result)
 }
 
-func readDBCreds() {
-	user = os.Getenv("DB_USER")
-	passwd = os.Getenv("DB_PASSWD")
-	host = os.Getenv("DB_HOST")
-	dbname = os.Getenv("DB_NAME")
-	dsn = user + ":" + passwd + "@" + host + "/" + dbname
+func readDBCreds(dbType string) string {
+    return os.Getenv("DSN_" + strings.ToUpper(dbType))
 }
 
-func setupDB() {
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = db.Exec("create table if not exists test (id int)")
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = db.Exec("insert into test values (1)")
-	if err != nil {
-		log.Fatal(err)
-	}
+func setupDB(dbType string, dsn string) *sql.DB {
+    db, err := sql.Open(dbType, dsn)
+    if err != nil {
+        log.Fatal(err)
+    }
+    _, err = db.Exec("create table test (id int)")
+    if err != nil {
+        log.Fatal(err)
+    }
+    _, err = db.Exec("insert into test values (1)")
+    if err != nil {
+        log.Fatal(err)
+    }
+    return db
 }
 
-func teardownDB() {
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = db.Exec("drop table test")
-	if err != nil {
-		log.Fatal(err)
-	}
-	db.Close()
+func teardownDB(db *sql.DB) {
+    err := db.Ping()
+    if err != nil {
+        log.Fatal(err)
+    }
+    _, err = db.Exec("drop table test")
+    if err != nil {
+        log.Fatal(err)
+    }
+    db.Close()
 }
