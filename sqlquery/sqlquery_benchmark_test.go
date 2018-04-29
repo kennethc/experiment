@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
+    _ "github.com/lib/pq"
 	"log"
 	"os"
 	"strings"
@@ -16,7 +17,7 @@ type connection struct {
 }
 
 var (
-	dbTypes []string = []string{"mysql", "sqlserver"}
+	dbTypes []string = []string{"mysql", "sqlserver", "postgres"}
 	dbs     map[string]connection
 )
 
@@ -61,6 +62,55 @@ func BenchmarkMysqlPrepStmtOuterLoop(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		var id int
 		stmt, err := db.Prepare("select id from test where id=?")
+		defer stmt.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+		db.QueryRow("1").Scan(&id)
+	}
+}
+
+func BenchmarkPostgresQuery(b *testing.B) {
+	db := dbs["postgres"].conn
+	err := db.Ping()
+	if err != nil {
+		b.Errorf("No PostgreSQL connection.")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var id int
+		db.QueryRow("select id from test where id=1").Scan(&id)
+	}
+}
+
+func BenchmarkPostgresPrepStmtInnerLoop(b *testing.B) {
+	db := dbs["postgres"].conn
+	err := db.Ping()
+	if err != nil {
+		b.Errorf("No PostgreSQL connection.")
+	}
+	b.ResetTimer()
+	stmt, err := db.Prepare("select id from test where id=$1")
+	defer stmt.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i := 0; i < b.N; i++ {
+		var id int
+		db.QueryRow("1").Scan(&id)
+	}
+}
+
+func BenchmarkPostgresPrepStmtOuterLoop(b *testing.B) {
+	db := dbs["postgres"].conn
+	err := db.Ping()
+	if err != nil {
+		b.Errorf("No PostgreSQL connection.")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var id int
+		stmt, err := db.Prepare("select id from test where id=$1")
 		defer stmt.Close()
 		if err != nil {
 			log.Fatal(err)
