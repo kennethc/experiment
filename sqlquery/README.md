@@ -10,7 +10,6 @@ Benchmarking the following:
 Table should be kept very small to minimise latency from disk reads. If at all possible, the network path should also be kept minimal to minimise network latency. Everything is intentionally kept small, including the query, to better evaluate the performance difference of the statements.
 
 Export these environment variables for database credentials:
-- DB_USER
-- DB_PASSWD
-- DB_HOST
-- DB_NAME
+- DSN_MYSQL
+- DSN_SQLSERVER
+- DSN_POSTGRES
