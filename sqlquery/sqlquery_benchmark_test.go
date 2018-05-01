@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
-    _ "github.com/lib/pq"
+	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"strings"
@@ -169,18 +169,19 @@ func BenchmarkSqlserverPrepStmtOuterLoop(b *testing.B) {
 }
 
 func TestMain(m *testing.M) {
+	os.Exit(testMainWrapper(m))
+}
+
+func testMainWrapper(m *testing.M) int {
 	dbs = make(map[string]connection)
 	for _, v := range dbTypes {
 		db := connection{}
 		db.dsn = readDBCreds(v)
 		db.conn = setupDB(v, db.dsn)
+		defer teardownDB(db.conn)
 		dbs[v] = db
 	}
-	result := m.Run()
-	for _, v := range dbTypes {
-		teardownDB(dbs[v].conn)
-	}
-	os.Exit(result)
+	return m.Run()
 }
 
 func readDBCreds(dbType string) string {
