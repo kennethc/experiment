@@ -175,7 +175,7 @@ func BenchmarkSqlserverPrepStmtOuterLoop(b *testing.B) {
 					log.Fatal(err)
 				}
 				c.QueryRow("1").Scan(&id)
-			}
+			}()
 		}
 	} else {
 		b.Errorf("Did not run")
@@ -190,7 +190,9 @@ func testMainWrapper(m *testing.M) int {
 	dbs = make(map[string]dbsetup)
 	for _, d := range drivers {
 		db := &connection{}
-		if err := db.Setup(d); err == nil {
+		if err := db.Setup(d); err != nil {
+			log.Println(err)
+		} else {
 			defer db.Teardown()
 			dbs[d] = db
 		}
