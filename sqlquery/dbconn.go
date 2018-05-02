@@ -36,9 +36,6 @@ func (c *connection) Setup(driver string) error {
 		return err
 	}
 	_, err = c.conn.Exec("insert into test values (1)")
-	if err != nil {
-		return err
-	}
 	return err
 }
 
