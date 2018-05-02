@@ -44,8 +44,7 @@ func (c *connection) Teardown() error {
 	if err != nil {
 		return err
 	}
-	c.conn.Close()
-	return err
+	return c.conn.Close()
 }
 
 func (c *connection) GetConn() *sql.DB {
