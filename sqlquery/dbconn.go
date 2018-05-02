@@ -21,10 +21,7 @@ func (c *connection) open() error {
 	if c.conn, err = sql.Open(c.driver, c.dsn); err != nil {
 		return err
 	}
-	if err = c.conn.Ping(); err != nil {
-		return err
-	}
-	return err
+	return c.conn.Ping()
 }
 
 func (c *connection) Setup(driver string) error {
