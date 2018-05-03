@@ -44,7 +44,7 @@ func BenchmarkMysqlPrepStmtInnerLoop(b *testing.B) {
 	stmt, err := c.Prepare("select id from test where id=?")
 	defer stmt.Close()
 	if err != nil {
-		log.Fatal(err)
+		b.Fatal(err)
 	}
 	for i := 0; i < b.N; i++ {
 		var id int
@@ -65,7 +65,7 @@ func BenchmarkMysqlPrepStmtOuterLoop(b *testing.B) {
 			stmt, err := c.Prepare("select id from test where id=?")
 			defer stmt.Close()
 			if err != nil {
-				log.Fatal(err)
+				b.Fatal(err)
 			}
 			c.QueryRow("1").Scan(&id)
 		}()
@@ -95,7 +95,7 @@ func BenchmarkPostgresPrepStmtInnerLoop(b *testing.B) {
 	stmt, err := c.Prepare("select id from test where id=$1")
 	defer stmt.Close()
 	if err != nil {
-		log.Fatal(err)
+		b.Fatal(err)
 	}
 	for i := 0; i < b.N; i++ {
 		var id int
@@ -116,7 +116,7 @@ func BenchmarkPostgresPrepStmtOuterLoop(b *testing.B) {
 			stmt, err := c.Prepare("select id from test where id=$1")
 			defer stmt.Close()
 			if err != nil {
-				log.Fatal(err)
+				b.Fatal(err)
 			}
 			c.QueryRow("1").Scan(&id)
 		}()
@@ -139,14 +139,14 @@ func BenchmarkSqlserverQuery(b *testing.B) {
 func BenchmarkSqlserverPrepStmtInnerLoop(b *testing.B) {
 	db, ok := dbs["sqlserver"]
 	if !ok {
-		b.Errorf("Did not run")
+		b.Fatalf("Did not run")
 	}
 	c := db.GetConn()
 	b.ResetTimer()
 	stmt, err := c.Prepare("select id from test where id=?")
 	defer stmt.Close()
 	if err != nil {
-		log.Fatal(err)
+		b.Fatal(err)
 	}
 	for i := 0; i < b.N; i++ {
 		var id int
@@ -157,7 +157,7 @@ func BenchmarkSqlserverPrepStmtInnerLoop(b *testing.B) {
 func BenchmarkSqlserverPrepStmtOuterLoop(b *testing.B) {
 	db, ok := dbs["sqlserver"]
 	if !ok {
-		b.Errorf("Did not run")
+		b.Fatalf("Did not run")
 	}
 	c := db.GetConn()
 	b.ResetTimer()
@@ -167,7 +167,7 @@ func BenchmarkSqlserverPrepStmtOuterLoop(b *testing.B) {
 			stmt, err := c.Prepare("select id from test where id=?")
 			defer stmt.Close()
 			if err != nil {
-				log.Fatal(err)
+				b.Fatal(err)
 			}
 			c.QueryRow("1").Scan(&id)
 		}()
