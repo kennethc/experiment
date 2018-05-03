@@ -47,6 +47,6 @@ func (c *connection) Teardown() error {
 	return c.conn.Close()
 }
 
-func (c *connection) GetConn() *sql.DB {
+func (c *connection) Conn() *sql.DB {
 	return c.conn
 }

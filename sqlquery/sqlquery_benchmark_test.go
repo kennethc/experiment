@@ -13,7 +13,7 @@ import (
 type dbsetup interface {
 	Setup(driver string) error
 	Teardown() error
-	GetConn() *sql.DB
+	Conn() *sql.DB
 }
 
 var (
@@ -26,7 +26,7 @@ func BenchmarkMysqlQuery(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		var id int
@@ -39,7 +39,7 @@ func BenchmarkMysqlPrepStmtInnerLoop(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	stmt, err := c.Prepare("select id from test where id=?")
 	defer stmt.Close()
@@ -57,7 +57,7 @@ func BenchmarkMysqlPrepStmtOuterLoop(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		func() {
@@ -77,7 +77,7 @@ func BenchmarkPostgresQuery(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		var id int
@@ -90,7 +90,7 @@ func BenchmarkPostgresPrepStmtInnerLoop(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	stmt, err := c.Prepare("select id from test where id=$1")
 	defer stmt.Close()
@@ -108,7 +108,7 @@ func BenchmarkPostgresPrepStmtOuterLoop(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		func() {
@@ -128,7 +128,7 @@ func BenchmarkSqlserverQuery(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		var id int
@@ -141,7 +141,7 @@ func BenchmarkSqlserverPrepStmtInnerLoop(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	stmt, err := c.Prepare("select id from test where id=?")
 	defer stmt.Close()
@@ -159,7 +159,7 @@ func BenchmarkSqlserverPrepStmtOuterLoop(b *testing.B) {
 	if !ok {
 		b.Fatalf("Did not run")
 	}
-	c := db.GetConn()
+	c := db.Conn()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		func() {
