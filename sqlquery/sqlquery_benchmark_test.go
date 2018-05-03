@@ -181,7 +181,7 @@ func TestMain(m *testing.M) {
 func testMainWrapper(m *testing.M) int {
 	dbs = make(map[string]dbsetup)
 	for _, d := range drivers {
-		db := &connection{}
+		var db dbsetup = &connection{}
 		if err := db.Setup(d); err != nil {
 			log.Println(err)
 		} else {
