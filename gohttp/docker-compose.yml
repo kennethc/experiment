@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+    nginx-proxy:
+        image: kennethc/nginx
+        ports:
+            - "80:80"
+
+    gohttp:
+        image: kennethc/gohttp
