@@ -7,6 +7,7 @@ import (
 )
 
 func HelloServer(w http.ResponseWriter, req *http.Request) {
+    w.Header().Set("Cache-Control", "public")
 	io.WriteString(w, "Hello World!\n")
 }
 
